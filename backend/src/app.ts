@@ -3,6 +3,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes";
+import shiftRoutes from "./routes/shifts.routes";
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ const MONGO_URI = process.env.MONGO_URI;
 
 app.use(express.json());
 app.use("/api/auth", authRoutes);
+app.use("/api/shifts", shiftRoutes);
 
 app.get("/", (req, res) => {
     res.send("👋 Welcome to the Work Scheduler API");
