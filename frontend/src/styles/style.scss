@@ -111,7 +111,7 @@ body {
   .hidden {
     display: none;
   }
-  
+
   .overlay {
     position: fixed;
     top: 0;
@@ -128,5 +128,30 @@ body {
   .overlay.show {
     opacity: 1;
     pointer-events: auto;
+  }
+  
+  #add-shift-container {
+    background: #f9f9f9;
+    padding: 1rem;
+    margin: 2rem 0;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+  }
+
+  #shift-actions {
+    margin: 1rem 0;
+  
+    button {
+      padding: 0.5rem 1rem;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 0.4rem;
+      cursor: pointer;
+    }
+  
+    button:hover {
+      background-color: #45a049;
+    }
   }
   
