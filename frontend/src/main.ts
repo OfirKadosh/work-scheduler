@@ -30,25 +30,31 @@ const registerTemplate = `
 
 const dashboardTemplate = `
   <h2>📋 Work Shifts Dashboard</h2>
+
+  <div id="shift-actions" class="hidden">
+    <button id="add-shift-btn">➕ Add New Shift</button>
+  </div>
+
   <div id="shift-list">Loading shifts...</div>
 
   <div id="overlay" class="overlay hidden"></div>
 
-  <div id="edit-popup" class="popup hidden">
-    <form id="edit-form">
-      <h3>Edit Shift</h3>
-      <input type="date" id="edit-date" required />
-      <input type="time" id="edit-start" required />
-      <input type="time" id="edit-end" required />
-      <input type="text" id="edit-assigned" placeholder="User ID" required />
-      <button type="submit">Save</button>
-      <button type="button" id="cancel-edit">Cancel</button>
+  <div id="add-popup" class="popup hidden">
+    <form id="add-form">
+      <h3>Add New Shift</h3>
+      <input type="date" id="new-date" required />
+      <input type="time" id="new-start" required />
+      <input type="time" id="new-end" required />
+      <input type="text" id="new-assigned" placeholder="User ID" required />
+      <button type="submit">Create</button>
+      <button type="button" id="cancel-add">Cancel</button>
     </form>
   </div>
 
+  <div id="edit-popup" class="popup hidden"> ... </div>
+
   <p><a href="#" data-link="login">Logout</a></p>
 `;
-
 
 function attachLinkListeners() {
   document.querySelectorAll("[data-link]")?.forEach((el) => {
@@ -130,6 +136,72 @@ const loadPage = async (page: "login" | "register" | "dashboard") => {
       `).join("");
 
       if (role === "admin") {
+        document.getElementById("shift-actions")?.classList.remove("hidden");
+
+        const addBtn = document.getElementById("add-shift-btn")!;
+        const addPopup = document.getElementById("add-popup")!;
+        const editPopup = document.getElementById("edit-popup")!;
+        const addForm = document.getElementById("add-form")!;
+        const cancelAdd = document.getElementById("cancel-add")!;
+
+        addBtn.addEventListener("click", () => {
+          addPopup.classList.remove("hidden");
+          overlay.classList.remove("hidden");
+          setTimeout(() => {
+            addPopup.classList.add("show");
+            overlay.classList.add("show");
+          }, 10);
+        });
+
+        cancelAdd.addEventListener("click", () => {
+          addPopup.classList.remove("show");
+          overlay.classList.remove("show");
+          setTimeout(() => {
+            addPopup.classList.add("hidden");
+            overlay.classList.add("hidden");
+          }, 300);
+        });
+
+        overlay.addEventListener("click", () => {
+          addPopup.classList.remove("show");
+          editPopup.classList.remove("show");
+          overlay.classList.remove("show");
+          setTimeout(() => {
+            addPopup.classList.add("hidden");
+            editPopup.classList.add("hidden");
+            overlay.classList.add("hidden");
+          }, 300);
+        });
+
+        addForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+        
+          const date = (document.getElementById("new-date") as HTMLInputElement).value;
+          const startHour = (document.getElementById("new-start") as HTMLInputElement).value;
+          const endHour = (document.getElementById("new-end") as HTMLInputElement).value;
+          const assignedTo = (document.getElementById("new-assigned") as HTMLInputElement).value;
+          const token = localStorage.getItem("token");
+        
+          try {
+            const res = await fetch("http://localhost:5000/api/shifts", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ date, startHour, endHour, assignedTo }),
+            });
+        
+            if (res.ok) {
+              await loadPage("dashboard");
+            } else {
+              alert("❌ Failed to create shift.");
+            }
+          } catch (err) {
+            console.error("❌ Error creating shift:", err);
+          }
+        });
+
         document.querySelectorAll(".delete-btn").forEach(btn => {
           btn.addEventListener("click", async (e) => {
             const parent = (e.currentTarget as HTMLElement).closest(".shift-card");
@@ -223,13 +295,13 @@ const loadPage = async (page: "login" | "register" | "dashboard") => {
           document.getElementById("cancel-edit")?.addEventListener("click", () => {
             popup.classList.remove("show");
             overlay.classList.remove("show");
-          
+
             setTimeout(() => {
               popup.classList.add("hidden");
               overlay.classList.add("hidden");
             }, 300);
-          });          
-          
+          });
+
         });
         overlay.addEventListener("click", () => {
           popup.classList.remove("show");
@@ -239,7 +311,7 @@ const loadPage = async (page: "login" | "register" | "dashboard") => {
             overlay.classList.add("hidden");
           }, 300);
         });
-        
+
       }
 
     } catch (err) {
